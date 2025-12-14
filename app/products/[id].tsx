@@ -4,6 +4,7 @@ import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useProductStore } from '../../store/productStore';
 import { theme } from '../../constants/theme';
 import ConfirmationModal from '../../components/ui/confirmation-modal';
+import { useAuthStore } from '../../store/authStore';
 
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -14,6 +15,7 @@ export default function ProductDetailScreen() {
   const [modalVisible, setModalVisible] = useState(false);
 
   const product = id ? getProductById(id) : undefined;
+  const currentUser = useAuthStore((state) => state.user);
 
   const handleDelete = () => {
     setModalVisible(true);
@@ -43,6 +45,8 @@ export default function ProductDetailScreen() {
     );
   }
 
+  const isOwner = currentUser?.id === product.user_id; // <-- check ownership
+
   return (
     <>
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -53,11 +57,15 @@ export default function ProductDetailScreen() {
           <Text style={styles.date}>
             Added {product.created_at ? new Date(product.created_at).toLocaleDateString() : 'Unknown date'}
           </Text>
-          <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-            <Text style={styles.deleteButtonText}>Delete Product</Text>
-          </TouchableOpacity>
+
+          {isOwner && (
+            <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
+              <Text style={styles.deleteButtonText}>Delete Product</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </ScrollView>
+
       <ConfirmationModal
         visible={modalVisible}
         onCancel={() => setModalVisible(false)}
@@ -68,6 +76,8 @@ export default function ProductDetailScreen() {
     </>
   );
 }
+
+
 
 const styles = StyleSheet.create({
   container: {

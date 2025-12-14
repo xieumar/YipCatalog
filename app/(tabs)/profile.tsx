@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -16,11 +16,14 @@ import { AuthButton } from '../../components/auth/AuthButton';
 import { Product } from '../../types';
 import { theme } from '../../constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import ConfirmationModal from '../../components/ui/confirmation-modal';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, logout } = useAuthStore();
   const { getProductsByUserId, fetchAllProducts, isLoading } = useProductStore();
+  const [modalVisible, setModalVisible] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -30,7 +33,11 @@ export default function ProfileScreen() {
 
   const userProducts = user ? getProductsByUserId(user.id) : [];
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
+    setModalVisible(true);
+  };
+
+  const onConfirmLogout = async () => {
     await logout();
     Toast.show({ type: 'success', text1: 'Logged out' });
     router.replace('/(auth)/login');
@@ -38,63 +45,78 @@ export default function ProfileScreen() {
 
   const renderProduct = ({ item }: { item: Product }) => (
     <TouchableOpacity
-      style={styles.productCard}
-      onPress={() => item.id && router.push({ pathname: '/products/[id]', params: { id: item.id } })}
+      style={styles.card}
+      onPress={() =>
+        router.push({ pathname: '/products/[id]', params: { id: item.id ?? '' } })
+      }
       activeOpacity={0.85}
     >
-                  <Image source={{ uri: item.image_base64 }} style={styles.productImage} />      <View style={styles.productInfo}>
-        <Text style={styles.productName} numberOfLines={1}>{item.name}</Text>
-        <Text style={styles.productPrice}>${item.price.toFixed(2)}</Text>
+      <Image source={{ uri: item.image_base64 }} style={styles.cardImage} />
+      <LinearGradient
+        colors={['transparent', 'rgba(0,0,0,0.6)']}
+        style={styles.cardOverlay}
+      />
+      <View style={styles.cardMeta}>
+        <Text style={styles.cardName} numberOfLines={1}>{item.name}</Text>
+        <View style={styles.cardPricePill}>
+          <Text style={styles.cardPrice}>${item.price.toFixed(2)}</Text>
+        </View>
       </View>
     </TouchableOpacity>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* User Card */}
-      <View style={styles.userCard}>
-        <View style={styles.userHeader}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{user?.email?.[0].toUpperCase() ?? '?'}</Text>
+    <>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.userCard}>
+          <View style={styles.userHeader}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>{user?.email?.[0].toUpperCase() ?? '?'}</Text>
+            </View>
+            <View style={styles.userInfo}>
+              <Text style={styles.userEmail}>{user?.email}</Text>
+              <Text style={styles.productCount}>
+                {userProducts.length} {userProducts.length === 1 ? 'product' : 'products'}
+              </Text>
+            </View>
           </View>
-          <View style={styles.userInfo}>
-            <Text style={styles.userEmail}>{user?.email}</Text>
-            <Text style={styles.productCount}>
-              {userProducts.length} {userProducts.length === 1 ? 'product' : 'products'}
-            </Text>
-          </View>
+          <AuthButton title="Log Out" onPress={handleLogout} variant="secondary" style={styles.logoutButton} />
         </View>
-        <AuthButton title="Log Out" onPress={handleLogout} variant="secondary" style={styles.logoutButton} />
-      </View>
 
-      {isLoading ? (
-        <View style={[styles.center, { flex: 1 }]}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
-        </View>
-      ) : userProducts.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No products yet</Text>
-          <Text style={styles.emptySubtext}>Products you create will appear here</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={userProducts}
-          renderItem={renderProduct}
-          keyExtractor={(item) => item.id?.toString() ?? Math.random().toString()}
-          contentContainerStyle={styles.listContent}
-          numColumns={2}
-          columnWrapperStyle={styles.row}
-        />
-      )}
-    </SafeAreaView>
+        {isLoading ? (
+          <View style={[styles.center, { flex: 1 }]}>
+            <ActivityIndicator size="large" color={theme.colors.primary} />
+          </View>
+        ) : userProducts.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No products yet</Text>
+            <Text style={styles.emptySubtext}>Products you create will appear here</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={userProducts}
+            renderItem={renderProduct}
+            keyExtractor={(item) => item.id?.toString() ?? Math.random().toString()}
+            contentContainerStyle={styles.listContent}
+            numColumns={2}
+            columnWrapperStyle={styles.row}
+          />
+        )}
+      </SafeAreaView>
+      <ConfirmationModal
+        visible={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        onConfirm={onConfirmLogout}
+        title="Log Out"
+        message="Are you sure you want to log out?"
+      />
+    </>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
-    padding: theme.spacing.md,
   },
   center: {
     justifyContent: 'center',
@@ -104,7 +126,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderRadius: 24,
     padding: theme.spacing.lg,
-    marginBottom: theme.spacing.lg,
+    margin: theme.spacing.md,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.1,
@@ -133,12 +155,12 @@ const styles = StyleSheet.create({
   userInfo: {
     flex: 1,
   },
- userEmail: {
-  fontSize: 16,
-  fontWeight: '600',
-  lineHeight: 24,
-  color: theme.colors.text,
-},
+  userEmail: {
+    fontSize: 16,
+    fontWeight: '600',
+    lineHeight: 24,
+    color: theme.colors.text,
+  },
   productCount: {
     ...theme.typography.body,
     color: theme.colors.textSecondary,
@@ -148,41 +170,57 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.sm,
   },
   listContent: {
-    paddingBottom: theme.spacing.md,
+    padding: theme.spacing.md,
   },
   row: {
     gap: theme.spacing.md,
     marginBottom: theme.spacing.md,
   },
-  productCard: {
+  card: {
     flex: 1,
-    backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
     overflow: 'hidden',
+    backgroundColor: theme.colors.surface,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
     shadowRadius: 8,
-    elevation: 3,
+    elevation: 2,
+    marginBottom: theme.spacing.md,
   },
-  productImage: {
+  cardImage: {
     width: '100%',
     aspectRatio: 1,
-    backgroundColor: theme.colors.border,
   },
-  productInfo: {
-    padding: theme.spacing.md,
-    gap: theme.spacing.xs,
+  cardOverlay: {
+    ...StyleSheet.absoluteFillObject,
   },
-  productName: {
+  cardMeta: {
+    position: 'absolute',
+    bottom: 12,
+    left: 12,
+    right: 12,
+    justifyContent: 'flex-end',
+    gap: 6,
+  },
+  cardName: {
     ...theme.typography.body,
-    color: theme.colors.text,
-    fontWeight: '500',
+    fontWeight: '700',
+    color: '#fff',
+    fontSize: 16,
   },
-  productPrice: {
+  cardPricePill: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  cardPrice: {
     ...theme.typography.caption,
-    color: theme.colors.textSecondary,
-    fontWeight: '600',
+    fontWeight: '700',
+    color: '#fff',
+    fontSize: 12,
   },
   emptyContainer: {
     flex: 1,

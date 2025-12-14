@@ -3,9 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   TouchableOpacity,
   Keyboard,
 } from 'react-native';
@@ -16,24 +13,21 @@ import { AuthForm } from '../../components/auth/AuthForm';
 import AnimatedAuthForm from '../../components/auth/AnimatedAuthForm';
 import { AuthButton } from '../../components/auth/AuthButton';
 import { theme } from '../../constants/theme';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default function LoginScreen() {
   const router = useRouter();
   const { login, isLoading } = useAuthStore();
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   const handleLogin = async () => {
     setError('');
-
     try {
       await login(email, password);
-      Toast.show({
-        type: 'success',
-        text1: 'Welcome back',
-      });
+      Toast.show({ type: 'success', text1: 'Welcome back' });
+      router.replace('/(tabs)/home');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     }
@@ -45,54 +39,50 @@ export default function LoginScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
+    <KeyboardAwareScrollView
       style={styles.screen}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      contentContainerStyle={styles.scroll}
+      enableOnAndroid
+      keyboardShouldPersistTaps="handled"
     >
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View style={styles.card}>
-          <View style={styles.header}>
-            <Text style={styles.title}>YipCatalog</Text>
-            <Text style={styles.subtitle}>Sign in to continue</Text>
-          </View>
+      <View style={styles.card}>
+        <View style={styles.header}>
+          <Text style={styles.title}>YipCatalog</Text>
+          <Text style={styles.subtitle}>Sign in to continue</Text>
+        </View>
 
-          <AnimatedAuthForm>
-             <AuthForm
+        <AnimatedAuthForm>
+          <AuthForm
             email={email}
             password={password}
             onEmailChange={setEmail}
             onPasswordChange={setPassword}
             error={error}
           />
-          </AnimatedAuthForm>
-         
+        </AnimatedAuthForm>
 
-          <AuthButton
-            title="Log in"
-            onPress={handleLogin}
-            loading={isLoading}
-            disabled={!email || !password}
-          />
+        <AuthButton
+          title="Log in"
+          onPress={handleLogin}
+          loading={isLoading}
+          disabled={!email || !password}
+        />
 
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Don’t have an account?</Text>
-            <TouchableOpacity onPress={goToSignup}>
-              <Text style={styles.footerLink}>Sign up</Text>
-            </TouchableOpacity>
-          </View>
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Don’t have an account?</Text>
+          <TouchableOpacity onPress={goToSignup}>
+            <Text style={styles.footerLink}>Sign up</Text>
+          </TouchableOpacity>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </View>
+    </KeyboardAwareScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#0F172A', 
+    backgroundColor: '#0F172A',
   },
   scroll: {
     flexGrow: 1,

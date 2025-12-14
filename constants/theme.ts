@@ -1,29 +1,22 @@
 export const theme = {
   colors: {
-    // Brand (AUTH BACKGROUND BLUE)
-    primary: '#122350',            // ⬅️ USE YOUR AUTH BG BLUE HERE
+    primary: '#122350',
     primaryDark: '#172554',
     primaryMuted: '#DBEAFE',
-
-    // Backgrounds
+    primaryLight: '#3B5ADC',
     background: '#F5F7FB',
     surface: '#FFFFFF',
-
-    // Text
     text: '#0F172A',
     textSecondary: '#64748B',
     textOnPrimary: '#FFFFFF',
-
-    // UI
     border: '#E2E8F0',
     disabled: '#CBD5E1',
-
-    // Feedback
     error: '#dc0e0e',
+    errorLight: '#b34242ff',
     success: '#22C55E',
+    successLight: '#6bd8a0',
     warning: '#F59E0B',
   },
-
   spacing: {
     xs: 4,
     sm: 8,
@@ -31,14 +24,12 @@ export const theme = {
     lg: 24,
     xl: 32,
   },
-
   borderRadius: {
     sm: 6,
     md: 10,
     lg: 14,
     xl: 20,
   },
-
   typography: {
     h1: {
       fontSize: 28,

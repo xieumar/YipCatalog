@@ -12,6 +12,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { useProductStore } from '../../store/productStore';
 import { Product } from '../../types';
 import { theme } from '../../constants/theme';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function FeedScreen() {
   const router = useRouter();
@@ -25,7 +26,7 @@ export default function FeedScreen() {
 
   const renderProduct = ({ item }: { item: Product }) => (
     <TouchableOpacity
-      style={styles.productCard}
+      style={styles.card}
       onPress={() =>
         router.push({
           pathname: '/products/[id]',
@@ -34,13 +35,18 @@ export default function FeedScreen() {
       }
       activeOpacity={0.85}
     >
-       <Image source={{ uri: item.image_base64 }} style={styles.productImage} /> 
-      <View style={styles.productOverlay} />
-      <View style={styles.productInfo}>
-        <Text style={styles.productName} numberOfLines={1}>
+      <Image source={{ uri: item.image_base64 }} style={styles.cardImage} />
+      <LinearGradient
+        colors={['transparent', 'rgba(0,0,0,0.6)']}
+        style={styles.cardOverlay}
+      />
+      <View style={styles.cardMeta}>
+        <Text style={styles.cardName} numberOfLines={1}>
           {item.name}
         </Text>
-        <Text style={styles.productPrice}>${item.price.toFixed(2)}</Text>
+        <View style={styles.cardPricePill}>
+          <Text style={styles.cardPrice}>${item.price.toFixed(2)}</Text>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -66,12 +72,15 @@ export default function FeedScreen() {
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>YipCatalog</Text>
+        <View style={styles.headerCurve} />
+      </View>
+
       <FlatList
         data={products}
         renderItem={renderProduct}
-        keyExtractor={(item) =>
-          item.id?.toString() ?? Math.random().toString()
-        }
+        keyExtractor={(item) => item.id?.toString() ?? Math.random().toString()}
         contentContainerStyle={styles.listContent}
         numColumns={2}
         columnWrapperStyle={styles.row}
@@ -79,6 +88,9 @@ export default function FeedScreen() {
     </View>
   );
 }
+
+const HEADER_HEIGHT = 140;
+const CURVE_HEIGHT = 20;
 
 const styles = StyleSheet.create({
   container: {
@@ -89,48 +101,89 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  header: {
+    height: HEADER_HEIGHT,
+    backgroundColor: theme.colors.primary,
+    justifyContent: 'center',
+    paddingHorizontal: theme.spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
+    zIndex: 1,
+    overflow: 'visible',
+  },
+  headerTitle: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: '700',
+    zIndex: 2,
+  },
+  headerCurve: {
+    position: 'absolute',
+    bottom: -CURVE_HEIGHT + 10,
+    left: 0,
+    right: 0,
+    height: CURVE_HEIGHT * 2,
+    backgroundColor: theme.colors.background,
+    borderTopLeftRadius: 36,
+    borderTopRightRadius: 36,
+    zIndex: 0,
+  },
   listContent: {
     padding: theme.spacing.md,
+    paddingTop: CURVE_HEIGHT,
   },
   row: {
     gap: theme.spacing.md,
     marginBottom: theme.spacing.md,
   },
-  productCard: {
+  card: {
     flex: 1,
     borderRadius: theme.borderRadius.lg,
     overflow: 'hidden',
     backgroundColor: theme.colors.surface,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
     marginBottom: theme.spacing.md,
   },
-  productImage: {
+  cardImage: {
     width: '100%',
     aspectRatio: 1,
-    borderTopLeftRadius: theme.borderRadius.lg,
-    borderTopRightRadius: theme.borderRadius.lg,
   },
-  productOverlay: {
+  cardOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.04)',
   },
-  productInfo: {
-    padding: theme.spacing.md,
-    gap: theme.spacing.xs,
+  cardMeta: {
+    position: 'absolute',
+    bottom: 12,
+    left: 12,
+    right: 12,
+    justifyContent: 'flex-end',
+    gap: 6,
   },
-  productName: {
+  cardName: {
     ...theme.typography.body,
-    fontWeight: '600',
-    color: theme.colors.text,
+    fontWeight: '700',
+    color: '#fff',
+    fontSize: 16,
   },
-  productPrice: {
+  cardPricePill: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  cardPrice: {
     ...theme.typography.caption,
     fontWeight: '700',
-    color: theme.colors.primary,
+    color: '#fff',
+    fontSize: 12,
   },
   emptyContainer: {
     flex: 1,

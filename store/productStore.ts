@@ -77,6 +77,21 @@ export const useProductStore = create<ProductState>((set, get) => ({
   removeProduct: async (id) => {
     set({ isLoading: true });
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const { data: product, error: fetchError } = await supabase
+        .from('products')
+        .select('user_id')
+        .eq('id', id)
+        .single();
+
+      if (fetchError) throw fetchError;
+      if (!product) throw new Error('Product not found');
+      if (product.user_id !== user.id) {
+        throw new Error('You are not authorized to delete this product');
+      }
+
       const { error: deleteError } = await supabase
         .from('products')
         .delete()

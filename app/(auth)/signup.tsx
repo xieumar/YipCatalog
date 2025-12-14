@@ -3,9 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   TouchableOpacity,
   Keyboard,
 } from 'react-native';
@@ -16,21 +13,21 @@ import { AuthForm } from '../../components/auth/AuthForm';
 import AnimatedAuthForm from '../../components/auth/AnimatedAuthForm';
 import { AuthButton } from '../../components/auth/AuthButton';
 import { theme } from '../../constants/theme';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default function SignupScreen() {
   const router = useRouter();
   const { signup, isLoading } = useAuthStore();
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   const handleSignup = async () => {
     setError('');
-
     try {
       await signup(email, password);
       Toast.show({ type: 'success', text1: 'Account created' });
+      router.replace('/(tabs)/home');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Signup failed');
     }
@@ -42,54 +39,50 @@ export default function SignupScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
+    <KeyboardAwareScrollView
       style={styles.screen}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      contentContainerStyle={styles.scroll}
+      enableOnAndroid
+      keyboardShouldPersistTaps="handled"
     >
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View style={styles.card}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Create account</Text>
-            <Text style={styles.subtitle}>Get started in seconds</Text>
-          </View>
+      <View style={styles.card}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Create account</Text>
+          <Text style={styles.subtitle}>Get started in seconds</Text>
+        </View>
 
-          <AnimatedAuthForm>
-             <AuthForm
+        <AnimatedAuthForm>
+          <AuthForm
             email={email}
             password={password}
             onEmailChange={setEmail}
             onPasswordChange={setPassword}
             error={error}
           />
-          </AnimatedAuthForm>
-         
+        </AnimatedAuthForm>
 
-          <AuthButton
-            title="Sign up"
-            onPress={handleSignup}
-            loading={isLoading}
-            disabled={!email || !password}
-          />
+        <AuthButton
+          title="Sign up"
+          onPress={handleSignup}
+          loading={isLoading}
+          disabled={!email || !password}
+        />
 
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Already have an account?</Text>
-            <TouchableOpacity onPress={goToLogin}>
-              <Text style={styles.footerLink}>Sign in</Text>
-            </TouchableOpacity>
-          </View>
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Already have an account?</Text>
+          <TouchableOpacity onPress={goToLogin}>
+            <Text style={styles.footerLink}>Sign in</Text>
+          </TouchableOpacity>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </View>
+    </KeyboardAwareScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#0F172A', // dark slate background
+    backgroundColor: '#0F172A',
   },
   scroll: {
     flexGrow: 1,
