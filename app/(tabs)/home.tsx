@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -26,10 +26,16 @@ export default function FeedScreen() {
   const renderProduct = ({ item }: { item: Product }) => (
     <TouchableOpacity
       style={styles.productCard}
-      onPress={() => router.push({ pathname: '/products/[id]', params: { id: item.id?.toString() ?? '' } })}
-      activeOpacity={0.9}
+      onPress={() =>
+        router.push({
+          pathname: '/products/[id]',
+          params: { id: item.id?.toString() ?? '' },
+        })
+      }
+      activeOpacity={0.85}
     >
-      <Image source={{ uri: item.image_url }} style={styles.productImage} />
+       <Image source={{ uri: item.image_base64 }} style={styles.productImage} /> 
+      <View style={styles.productOverlay} />
       <View style={styles.productInfo}>
         <Text style={styles.productName} numberOfLines={1}>
           {item.name}
@@ -63,7 +69,9 @@ export default function FeedScreen() {
       <FlatList
         data={products}
         renderItem={renderProduct}
-        keyExtractor={(item) => item.id?.toString() ?? Math.random().toString()}
+        keyExtractor={(item) =>
+          item.id?.toString() ?? Math.random().toString()
+        }
         contentContainerStyle={styles.listContent}
         numColumns={2}
         columnWrapperStyle={styles.row}
@@ -90,16 +98,25 @@ const styles = StyleSheet.create({
   },
   productCard: {
     flex: 1,
-    backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4,
+    marginBottom: theme.spacing.md,
   },
   productImage: {
     width: '100%',
     aspectRatio: 1,
-    backgroundColor: theme.colors.border,
+    borderTopLeftRadius: theme.borderRadius.lg,
+    borderTopRightRadius: theme.borderRadius.lg,
+  },
+  productOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.04)',
   },
   productInfo: {
     padding: theme.spacing.md,
@@ -107,13 +124,13 @@ const styles = StyleSheet.create({
   },
   productName: {
     ...theme.typography.body,
+    fontWeight: '600',
     color: theme.colors.text,
-    fontWeight: '500',
   },
   productPrice: {
     ...theme.typography.caption,
-    color: theme.colors.textSecondary,
-    fontWeight: '600',
+    fontWeight: '700',
+    color: theme.colors.primary,
   },
   emptyContainer: {
     flex: 1,

@@ -31,7 +31,6 @@ export default function SignupScreen() {
     try {
       await signup(email, password);
       Toast.show({ type: 'success', text1: 'Account created' });
-      router.replace('/(tabs)/feed');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Signup failed');
     }

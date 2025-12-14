@@ -1,8 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
 import { Product } from '../types';
-import { decode } from 'base64-arraybuffer';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 
 interface AddProductInput {
   name: string;
@@ -35,69 +34,54 @@ export const useProductStore = create<ProductState>((set, get) => ({
       set({ isLoading: false });
     }
   },
-  addProduct: async (data) => {
-    set({ isLoading: true });
-    try {
-      const { name, price, imageUri } = data;
-      const user = (await supabase.auth.getUser()).data.user;
-      if (!user) throw new Error('User not found');
+ addProduct: async ({ name, price, imageUri }) => {
+  set({ isLoading: true });
+  try {
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
-      const fileBase64 = await FileSystem.readAsStringAsync(imageUri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-      const filePath = `${user.id}/${new Date().getTime()}.jpg`;
-      const contentType = 'image/jpeg';
-
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(filePath, decode(fileBase64), { contentType });
-
-      if (uploadError) throw uploadError;
-
-      const { data: publicUrlData } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(uploadData.path);
-
-      const newProduct: Product = {
-        name,
-        price,
-        image_url: publicUrlData.publicUrl,
-        user_id: user.id,
-      };
-
-      const { error: insertError } = await supabase
-        .from('products')
-        .insert([newProduct]);
-      if (insertError) throw insertError;
-
-      await get().fetchAllProducts();
-    } catch (error) {
-      throw error;
-    } finally {
-      set({ isLoading: false });
+    if (authError || !user) {
+      throw new Error('User not authenticated');
     }
-  },
+
+    const fileBase64 = await FileSystem.readAsStringAsync(imageUri, {
+      encoding: 'base64',
+    });
+
+    const newProduct = {
+      name,
+      price,
+      image_base64: `data:image/jpeg;base64,${fileBase64}`,
+      user_id: user.id,
+    };
+
+    const { error: insertError } = await supabase
+      .from('products')
+      .insert(newProduct);
+
+    if (insertError) {
+      console.error(insertError);
+      throw insertError;
+    }
+
+    await get().fetchAllProducts();
+  } catch (error) {
+    console.error('Add product failed:', error);
+    throw error;
+  } finally {
+    set({ isLoading: false });
+  }
+},
   removeProduct: async (id) => {
     set({ isLoading: true });
     try {
-      const product = get().getProductById(id);
-      if (!product) throw new Error('Product not found');
-
       const { error: deleteError } = await supabase
         .from('products')
         .delete()
         .eq('id', id);
       if (deleteError) throw deleteError;
-
-      const imageName = product.image_url.split('/').pop();
-      if (imageName) {
-        const user = (await supabase.auth.getUser()).data.user;
-        if (user) {
-          await supabase.storage
-            .from('product-images')
-            .remove([`${user.id}/${imageName}`]);
-        }
-      }
 
       await get().fetchAllProducts();
     } catch (error) {

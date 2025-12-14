@@ -19,7 +19,7 @@ export const theme = {
     disabled: '#CBD5E1',
 
     // Feedback
-    error: '#EF4444',
+    error: '#dc0e0e',
     success: '#22C55E',
     warning: '#F59E0B',
   },

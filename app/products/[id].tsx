@@ -46,12 +46,12 @@ export default function ProductDetailScreen() {
   return (
     <>
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <Image source={{ uri: product.image_url }} style={styles.image} />
+        <Image source={{ uri: product.image_base64 }} style={styles.image} />
         <View style={styles.details}>
           <Text style={styles.name}>{product.name}</Text>
           <Text style={styles.price}>${product.price.toFixed(2)}</Text>
           <Text style={styles.date}>
-            Added {new Date(product.created_at).toLocaleDateString()}
+            Added {product.created_at ? new Date(product.created_at).toLocaleDateString() : 'Unknown date'}
           </Text>
           <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
             <Text style={styles.deleteButtonText}>Delete Product</Text>

@@ -1,4 +1,4 @@
-import { useRouter, Slot } from 'expo-router';
+import { Slot, Link, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { TouchableOpacity, View, StyleSheet, Platform } from 'react-native';
 import React, { useState, useCallback, useEffect } from 'react';
@@ -21,21 +21,25 @@ export default function TabsLayout() {
   useEffect(() => {
     fetchAllProducts();
   }, [fetchAllProducts]);
+  
+  const userProducts = user ? products.filter(p => p.user_id === user.id) : [];
+  const limitReached = userProducts.length >= MAX_PRODUCTS;
 
   const handleAddPress = () => {
     if (user) {
-      const userProducts = products.filter(p => p.user_id === user.id);
-      if (userProducts.length >= MAX_PRODUCTS) {
+      if (limitReached) {
         setIsInfoModalVisible(true);
       } else {
-        router.push('/modal');
+        router.push('/(tabs)/add');
       }
+    } else {
+      router.push('/(auth)/login');
     }
   };
 
   const navigate = (tab: 'home' | 'profile') => {
     setActiveTab(tab);
-    router.push(`/(tabs)/${tab}`);
+    // Link component will handle the push
   };
 
   return (
@@ -47,31 +51,35 @@ export default function TabsLayout() {
           { bottom: insets.bottom > 0 ? insets.bottom - 8 : 16 },
         ]}
       >
-        <TouchableOpacity
-          onPress={() => navigate('home')}
-          style={styles.navButton}
-        >
-          <Ionicons
-            name={activeTab === 'home' ? 'grid' : 'grid-outline'}
-            size={28}
-            color={activeTab === 'home' ? theme.colors.primary : theme.colors.textSecondary}
-          />
-        </TouchableOpacity>
+        <Link href="/(tabs)/home" asChild>
+          <TouchableOpacity
+            onPress={() => navigate('home')}
+            style={styles.navButton}
+          >
+            <Ionicons
+              name={activeTab === 'home' ? 'grid' : 'grid-outline'}
+              size={28}
+              color={activeTab === 'home' ? theme.colors.primary : theme.colors.textSecondary}
+            />
+          </TouchableOpacity>
+        </Link>
 
         <TouchableOpacity style={styles.centerFab} activeOpacity={0.85} onPress={handleAddPress}>
           <Ionicons name="add" size={30} color={theme.colors.surface} />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => navigate('profile')}
-          style={styles.navButton}
-        >
-          <Ionicons
-            name={activeTab === 'profile' ? 'person' : 'person-outline'}
-            size={28}
-            color={activeTab === 'profile' ? theme.colors.primary : theme.colors.textSecondary}
-          />
-        </TouchableOpacity>
+        <Link href="/(tabs)/profile" asChild>
+          <TouchableOpacity
+            onPress={() => navigate('profile')}
+            style={styles.navButton}
+          >
+            <Ionicons
+              name={activeTab === 'profile' ? 'person' : 'person-outline'}
+              size={28}
+              color={activeTab === 'profile' ? theme.colors.primary : theme.colors.textSecondary}
+            />
+          </TouchableOpacity>
+        </Link>
       </View>
 
       <InfoModal

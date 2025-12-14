@@ -30,8 +30,10 @@ export default function LoginScreen() {
 
     try {
       await login(email, password);
-      Toast.show({ type: 'success', text1: 'Welcome back' });
-      router.replace('/(tabs)/feed');
+      Toast.show({
+        type: 'success',
+        text1: 'Welcome back',
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     }
