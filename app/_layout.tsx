@@ -1,20 +1,25 @@
+import 'react-native-url-polyfill/auto';
 import { Stack } from 'expo-router';
-import React from 'react';
-import { View } from 'react-native';
 import Toast from 'react-native-toast-message';
+import { toastConfig } from '../config/toast';
+import { theme } from '../constants/theme';
 
-export default function AppLayout() {
+export default function RootLayout() {
   return (
-    <View style={{ flex: 1 }}>
-      <Stack>
-        <Stack.Screen
-          name="products/index"
-          options={{
-            headerShown: false,
-          }}
-        />
+    <>
+      <Stack
+       screenOptions={{ 
+        headerShown: false,
+        contentStyle: {
+          backgroundColor: theme.colors.primary, 
+        },
+        }}>
+        <Stack.Screen name="(auth)" />
+        <Stack.Screen name="products/[id]" options={{ headerShown: true }} />
       </Stack>
-      <Toast />
-    </View>
+      <Toast config={toastConfig} />
+    </>
   );
 }
+
+

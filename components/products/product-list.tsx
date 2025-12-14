@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { Product } from '@/types';
-import useProductStore from '@/store/product-store';
+import useProductStore from '@/store/productStore';
 import { ThemedText } from '../themed-text';
 
 const ProductList = () => {

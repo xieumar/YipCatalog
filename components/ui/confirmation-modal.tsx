@@ -1,32 +1,42 @@
 import React from 'react';
 import { Modal, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedText } from '../themed-text';
+import { theme } from '../../constants/theme';
 
-interface WarningModalProps {
+interface ConfirmationModalProps {
   visible: boolean;
-  onClose: () => void;
+  onCancel: () => void;
+  onConfirm: () => void;
   title: string;
   message: string;
 }
 
-const WarningModal = ({ visible, onClose, title, message }: WarningModalProps) => {
+const ConfirmationModal = ({ visible, onCancel, onConfirm, title, message }: ConfirmationModalProps) => {
   return (
     <Modal
       animationType="fade"
       transparent={true}
       visible={visible}
-      onRequestClose={onClose}
+      onRequestClose={onCancel}
     >
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
           <ThemedText style={styles.modalTitle}>{title}</ThemedText>
           <ThemedText style={styles.modalText}>{message}</ThemedText>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={onClose}
-          >
-            <Text style={styles.buttonText}>OK</Text>
-          </TouchableOpacity>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={[styles.button, styles.cancelButton]}
+              onPress={onCancel}
+            >
+              <Text style={styles.buttonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.confirmButton]}
+              onPress={onConfirm}
+            >
+              <Text style={styles.buttonText}>Confirm</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </Modal>
@@ -54,6 +64,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+    width: '80%',
   },
   modalTitle: {
     fontSize: 20,
@@ -65,11 +76,24 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     textAlign: 'center',
   },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
   button: {
     borderRadius: 10,
-    padding: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
     elevation: 2,
-    backgroundColor: '#007BFF',
+    flex: 1,
+    marginHorizontal: 5,
+  },
+  cancelButton: {
+    backgroundColor: theme.colors.primary,
+  },
+  confirmButton: {
+    backgroundColor: theme.colors.error,
   },
   buttonText: {
     color: 'white',
@@ -78,4 +102,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default WarningModal;
+export default ConfirmationModal;
